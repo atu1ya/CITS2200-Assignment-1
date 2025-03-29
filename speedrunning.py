@@ -89,61 +89,10 @@ class Leaderboard:
         Returns:
             The time required to place `rank`th or better.
         """
-        if not self.leaderboard or rank <= 0:
+        if not self.leaderboard or rank <= 0 or rank > len(self.leaderboard):
             return None
-            
-        # Quick checks for common cases
-        if rank == 1:
-            return self.leaderboard[0][0]
-        if rank >= len(self.leaderboard):
-            return self.leaderboard[-1][0]
-            
-        # Binary search to find the rank transition point
-        def find_rank_transitions():
-            # Precompute rank transitions for binary search
-            transitions = []  # List of (time, start_rank) pairs
-            current_rank = 1
-            i = 0
-            
-            while i < len(self.leaderboard):
-                current_time = self.leaderboard[i][0]
-                same_time_count = 0
-                
-                # Count entries with the same time
-                while i + same_time_count < len(self.leaderboard) and self.leaderboard[i + same_time_count][0] == current_time:
-                    same_time_count += 1
-                    
-                transitions.append((current_time, current_rank))
-                i += same_time_count
-                current_rank = i + 1
-                
-            return transitions
-            
-        transitions = find_rank_transitions()
-        
-        # Binary search on the rank transitions
-        low = 0
-        high = len(transitions) - 1
-        result = transitions[-1][0]  # Default to last time
-        
-        while low <= high:
-            mid = (low + high) // 2
-            time, start_rank = transitions[mid]
-            
-            # Calculate the end rank for this time
-            if mid + 1 < len(transitions):
-                end_rank = transitions[mid+1][1] - 1
-            else:
-                end_rank = len(self.leaderboard)
-                
-            if start_rank <= rank <= end_rank:
-                return time
-            elif rank < start_rank:
-                high = mid - 1
-            else:
-                low = mid + 1
-                
-        return result
+        return self.leaderboard[rank - 1][0]
+    
 
     def get_possible_rank(self, time):
         """Determine what rank the run would get if it was submitted.
@@ -159,7 +108,7 @@ class Leaderboard:
         if not self.leaderboard:
             return 1
         
-        # Use binary search to find the correct rank
+        
         low = 0
         high = len(self.leaderboard) - 1
         while low <= high:
@@ -169,7 +118,7 @@ class Leaderboard:
             else:
                 high = mid - 1
         
-        # The rank is one more than the number of runs with faster times
+        
         return low + 1
 
     def count_time(self, time):
@@ -184,7 +133,7 @@ class Leaderboard:
         if not self.leaderboard:
             return 0
         
-        # Binary search to find first occurrence
+        
         def find_first(time):
             low = 0
             high = len(self.leaderboard) - 1
@@ -193,14 +142,14 @@ class Leaderboard:
                 mid = (low + high) // 2
                 if self.leaderboard[mid][0] == time:
                     result = mid
-                    high = mid - 1  # Look for earlier occurrences
+                    high = mid - 1  
                 elif self.leaderboard[mid][0] < time:
                     low = mid + 1
                 else:
                     high = mid - 1
             return result
             
-        # Binary search to find last occurrence
+        
         def find_last(time):
             low = 0
             high = len(self.leaderboard) - 1
@@ -209,7 +158,7 @@ class Leaderboard:
                 mid = (low + high) // 2
                 if self.leaderboard[mid][0] == time:
                     result = mid
-                    low = mid + 1  # Look for later occurrences
+                    low = mid + 1  
                 elif self.leaderboard[mid][0] < time:
                     low = mid + 1
                 else:
